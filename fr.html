@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>DP Frame Maker</title>
+    <title>Ramadan DP Maker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
@@ -11,16 +11,14 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f8fafc;
-            /* Prevent pull-to-refresh on mobile */
             overscroll-behavior-y: contain; 
         }
 
-        /* Custom Range Slider Styling */
+        /* Custom Range Slider */
         input[type=range] {
             -webkit-appearance: none; 
             background: transparent; 
         }
-
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
             height: 20px;
@@ -31,7 +29,6 @@
             margin-top: -8px; 
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
         }
-
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
@@ -40,14 +37,6 @@
             border-radius: 2px;
         }
 
-        /* Frame Button Active State */
-        .frame-btn.active {
-            border-color: #6366f1; /* Indigo-500 */
-            color: #4f46e5;
-            background-color: #eef2ff;
-        }
-
-        /* Checkerboard pattern for transparency indication */
         .canvas-container {
             background-image: 
                 linear-gradient(45deg, #e5e7eb 25%, transparent 25%), 
@@ -58,549 +47,237 @@
             background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
             background-color: white;
         }
-
-        .btn-hover {
-            transition: all 0.2s ease;
-        }
-        .btn-hover:active {
-            transform: scale(0.98);
-        }
     </style>
 </head>
 <body class="text-slate-800 min-h-screen flex flex-col items-center py-8 px-4">
 
     <!-- Header -->
     <header class="text-center mb-6 max-w-lg w-full">
-        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Ramadan</h1>
-        <p class="text-slate-500 mt-2 text-sm">Upload, adjust, and create your perfect profile picture.</p>
+        <h1 class="text-3xl font-bold text-slate-900 tracking-tight">Ramadan DP Maker</h1>
+        <p class="text-slate-500 mt-2 text-sm">Create your profile picture instantly.</p>
     </header>
 
-    <!-- Main Application Card -->
+    <!-- App Card -->
     <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden border border-slate-100">
         
-        <!-- Canvas Area -->
+        <!-- Canvas -->
         <div class="relative w-full aspect-square canvas-container cursor-move overflow-hidden bg-slate-50 group">
             <canvas id="editorCanvas" class="w-full h-full object-contain touch-none"></canvas>
             
-            <!-- Placeholder Text (Hidden when image loaded) -->
+            <!-- Upload Prompt -->
             <div id="uploadPrompt" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none transition-opacity duration-300">
                 <div class="bg-white/90 p-4 rounded-full shadow-sm mb-3">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <p class="text-sm font-medium text-slate-400">Upload a photo to begin</p>
+                <p class="text-sm font-medium text-slate-400">Tap below to upload photo</p>
             </div>
-
-            <!-- Loading Indicator -->
+            
+            <!-- Loader -->
             <div id="loadingIndicator" class="absolute inset-0 bg-white/80 z-20 hidden flex items-center justify-center">
                 <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
             </div>
+
+            <!-- Missing Frame Warning -->
+            <div id="frameWarning" class="absolute top-2 left-2 right-2 bg-red-100 text-red-600 text-[10px] p-2 rounded hidden text-center border border-red-200">
+                ⚠️ 'SS.png' not found. Please keep the image in the same folder.
+            </div>
         </div>
 
-        <!-- Controls Area -->
+        <!-- Controls -->
         <div class="p-6 space-y-6">
             
-            <!-- 1. Upload Button -->
-            <div class="flex justify-center">
+            <!-- Step 1: User Photo -->
+            <div class="space-y-2">
                 <input type="file" id="imageInput" accept="image/png, image/jpeg, image/jpg" class="hidden">
                 <button onclick="document.getElementById('imageInput').click()" 
-                    class="btn-hover flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-2.5 rounded-full font-medium text-sm transition-colors w-full justify-center border border-slate-200">
+                    class="btn-hover flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 px-5 py-3 rounded-xl font-medium text-sm transition-colors w-full justify-center border border-slate-200">
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
                     Select Photo
                 </button>
             </div>
 
-            <!-- 2. Adjustment Controls (Disabled initially) -->
+            <!-- Editor Controls -->
             <div id="controlsPanel" class="opacity-50 pointer-events-none transition-opacity duration-300 space-y-5">
                 
-                <!-- NEW: Frame Selection -->
-                <div class="space-y-2">
-                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider block">Choose Frame</label>
-                    <!-- Changed grid-cols-3 to grid-cols-4 -->
-                    <div class="grid grid-cols-4 gap-2">
-                        <button onclick="changeFrame(0)" id="btn-frame-0" class="frame-btn active border border-slate-200 bg-white rounded-lg p-2 text-[10px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all truncate">
-                            Frame 1
-                        </button>
-                        <button onclick="changeFrame(1)" id="btn-frame-1" class="frame-btn border border-slate-200 bg-white rounded-lg p-2 text-[10px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all truncate">
-                            Frame 2
-                        </button>
-                        <button onclick="changeFrame(2)" id="btn-frame-2" class="frame-btn border border-slate-200 bg-white rounded-lg p-2 text-[10px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all truncate">
-                            Frame 3
-                        </button>
-                        <!-- Custom Upload Button -->
-                        <button onclick="triggerCustomFrame()" id="btn-frame-3" class="frame-btn border border-slate-200 bg-white rounded-lg p-2 text-[10px] font-bold text-slate-600 shadow-sm hover:bg-slate-50 transition-all truncate flex flex-col items-center justify-center gap-1">
-                            <span>Upload</span>
-                        </button>
-                    </div>
-                    <!-- Hidden input for custom frame upload -->
-                    <input type="file" id="frameInput" accept="image/png" class="hidden">
-                    <p class="text-[10px] text-slate-400 text-center italic" id="customFrameText">Or click Upload to use a file from device</p>
-                </div>
-
+                <!-- Zoom -->
                 <div class="space-y-2">
                     <div class="flex justify-between text-xs font-semibold text-slate-400 uppercase tracking-wider">
-                        <span>Zoom</span>
+                        <span>Zoom Photo</span>
                         <span id="zoomValue">100%</span>
                     </div>
                     <input type="range" id="zoomSlider" min="0.1" max="3" step="0.01" value="1" class="w-full">
                 </div>
 
-                <div class="bg-indigo-50 rounded-lg p-3 flex items-start gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-indigo-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-xs text-indigo-700 leading-relaxed">
-                        Drag the image on the canvas to reposition it perfectly inside the frame.
-                    </p>
+                <div class="bg-indigo-50 p-3 rounded-lg text-xs text-indigo-800 text-center">
+                    Drag the photo to adjust position inside the frame.
                 </div>
             </div>
 
-            <!-- 3. Download Button -->
+            <!-- Download -->
             <button id="downloadBtn" disabled 
                 class="btn-hover w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white py-3.5 rounded-xl font-bold text-base shadow-lg shadow-indigo-200 flex items-center justify-center gap-2 transition-all">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-                Download Frame
+                Download DP
             </button>
         </div>
     </div>
 
-    <footer class="mt-8 text-center text-slate-400 text-xs">
-        <p>&copy; 2024 Frame Studio. All processing happens in your browser.</p>
+    <footer class="mt-8 text-center text-slate-400 text-[10px]">
+        <p>Ensure <b>SS.png</b> is in the same folder as this file.</p>
     </footer>
 
     <script>
-        /**
-         * Core Application Logic
-         */
-        
-        // ==========================================
-        // 🔴 SETUP: YOUR FRAME IMAGE LINKS HERE
-        // ==========================================
-        // এখানে আপনার img ফোল্ডারের ফাইলের নাম দেওয়া হলো।
-        // আপনার প্রোজেক্টে অবশ্যই "img" নামে ফোল্ডার থাকতে হবে।
-        
-        const frameLinks = [
-            "img/frame1.png",  // Frame 1
-            "img/frame2.png",  // Frame 2
-            "img/frame3.png"   // Frame 3
-        ];
-
-        // Configuration
-        const CANVAS_SIZE = 1080; // High resolution for export
-        const DEFAULT_ZOOM = 1;
-        
-        // State
-        const state = {
-            userImage: null,
-            frameImage: null,
-            scale: 1,
-            offsetX: 0,
-            offsetY: 0,
-            isDragging: false,
-            startX: 0,
-            startY: 0,
-            currentFrameIndex: 0
-        };
-
-        // DOM Elements
+        const CANVAS_SIZE = 1080;
         const canvas = document.getElementById('editorCanvas');
         const ctx = canvas.getContext('2d');
-        const imageInput = document.getElementById('imageInput');
-        const frameInput = document.getElementById('frameInput'); // New Input
-        const zoomSlider = document.getElementById('zoomSlider');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const controlsPanel = document.getElementById('controlsPanel');
-        const uploadPrompt = document.getElementById('uploadPrompt');
-        const zoomValue = document.getElementById('zoomValue');
-        const loadingIndicator = document.getElementById('loadingIndicator');
-
-        // Initialize Canvas Resolution
         canvas.width = CANVAS_SIZE;
         canvas.height = CANVAS_SIZE;
 
-        // --- 1. Frame Generation Logic ---
-        
-        function changeFrame(index) {
-            state.currentFrameIndex = index;
-            updateActiveButton(index);
-            
-            // Check if we have a custom link for this index
-            if (index < 3 && frameLinks[index]) {
-                loadFrameFromUrl(frameLinks[index]);
-            } else {
-                generateFrame(index);
-            }
-        }
+        const state = {
+            userImg: null,
+            frameImg: null,
+            scale: 1,
+            pan: {x: 0, y: 0},
+            drag: {active: false, x: 0, y: 0}
+        };
 
-        function loadFrameFromUrl(url) {
-            // Show loading indicator while fetching external image
-            loadingIndicator.classList.remove('hidden');
+        // --- Initialize: Load SS.png ---
+        window.onload = function() {
+            const frame = new Image();
+            frame.src = "SS.png"; // Looking for this specific file
             
-            const img = new Image();
-            
-            // NOTE: For local file:// usage, crossOrigin can cause issues in Chrome.
-            // If you are hosting this on a web server, keep the next line. 
-            // If just opening the HTML file directly, you might need to comment it out, 
-            // but then download might not work due to "tainted canvas".
-            //img.crossOrigin = "anonymous"; 
-            
-            img.src = url;
-            
-            img.onload = () => {
-                state.frameImage = img;
+            frame.onload = function() {
+                state.frameImg = frame;
                 draw();
-                loadingIndicator.classList.add('hidden');
             };
-            
-            img.onerror = () => {
-                console.warn("Could not load frame from URL: " + url);
-                loadingIndicator.classList.add('hidden');
-                // Fallback to generator if file not found
-                generateFrame(state.currentFrameIndex);
+
+            frame.onerror = function() {
+                console.warn("SS.png not found");
+                document.getElementById('frameWarning').classList.remove('hidden');
+                // Optional: Draw placeholder text
+                ctx.font = "30px sans-serif";
+                ctx.fillStyle = "gray";
+                ctx.textAlign = "center";
+                ctx.fillText("SS.png not found", CANVAS_SIZE/2, CANVAS_SIZE/2);
             };
-        }
+        };
 
-        function triggerCustomFrame() {
-            // Trigger the hidden file input
-            frameInput.click();
-        }
-
-        function updateActiveButton(index) {
-             document.querySelectorAll('.frame-btn').forEach((btn, i) => {
-                // If index is 3 (Custom), we handle it separately inside the file upload listener
-                if (i === index) btn.classList.add('active');
-                else btn.classList.remove('active');
-            });
-        }
-
-        // Custom Frame Upload Listener
-        frameInput.addEventListener('change', (e) => {
+        // --- 1. User Photo Upload ---
+        document.getElementById('imageInput').addEventListener('change', (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-
+            if(!file) return;
+            
+            document.getElementById('loadingIndicator').classList.remove('hidden');
+            
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = (evt) => {
                 const img = new Image();
                 img.onload = () => {
-                    state.frameImage = img;
-                    state.currentFrameIndex = 3;
-                    updateActiveButton(3); // Highlight Custom button
-                    document.getElementById('customFrameText').innerText = "Custom frame loaded!";
-                    document.getElementById('customFrameText').classList.add('text-indigo-500');
+                    state.userImg = img;
+                    // Reset View for new user photo
+                    const scale = Math.max(CANVAS_SIZE/img.width, CANVAS_SIZE/img.height);
+                    state.scale = scale;
+                    state.pan = {x: 0, y: 0};
+                    
+                    // Enable Controls
+                    document.getElementById('controlsPanel').classList.remove('opacity-50', 'pointer-events-none');
+                    document.getElementById('uploadPrompt').classList.add('opacity-0');
+                    document.getElementById('downloadBtn').disabled = false;
+                    document.getElementById('loadingIndicator').classList.add('hidden');
+                    
+                    // Update Zoom UI
+                    updateZoomUI();
                     draw();
                 };
-                img.src = event.target.result;
+                img.src = evt.target.result;
             };
             reader.readAsDataURL(file);
         });
 
-        function generateFrame(index) {
-            // If it's custom (index 3), do nothing here as it's handled by upload
-            if (index === 3) return;
-
-            const frameCanvas = document.createElement('canvas');
-            frameCanvas.width = CANVAS_SIZE;
-            frameCanvas.height = CANVAS_SIZE;
-            const fCtx = frameCanvas.getContext('2d');
-            const cx = CANVAS_SIZE / 2;
-            const cy = CANVAS_SIZE / 2;
-
-            fCtx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-
-            if (index === 0) {
-                // --- Style 1: Classic Gradient (Circle) ---
-                const radius = CANVAS_SIZE / 2 - 20;
-
-                const gradient = fCtx.createLinearGradient(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-                gradient.addColorStop(0, '#6366f1'); // Indigo
-                gradient.addColorStop(1, '#ec4899'); // Pink
-
-                fCtx.beginPath();
-                fCtx.arc(cx, cy, radius, 0, Math.PI * 2);
-                fCtx.lineWidth = 40;
-                fCtx.strokeStyle = gradient;
-                fCtx.stroke();
-
-                // Badge
-                fCtx.fillStyle = '#ffffff';
-                fCtx.beginPath();
-                fCtx.arc(cx + 250, cy + 300, 60, 0, Math.PI * 2);
-                fCtx.fill();
-                
-                fCtx.font = "bold 60px Inter, sans-serif";
-                fCtx.fillStyle = gradient;
-                fCtx.textAlign = "center";
-                fCtx.textBaseline = "middle";
-                fCtx.fillText("★", cx + 250, cy + 305);
-
-                // Text
-                fCtx.save();
-                fCtx.font = "bold 50px Inter, sans-serif";
-                fCtx.fillStyle = "#ffffff";
-                fCtx.shadowColor = "rgba(0,0,0,0.5)";
-                fCtx.shadowBlur = 10;
-                fCtx.textAlign = "center";
-                fCtx.fillText("#FrameStudio", cx, CANVAS_SIZE - 60);
-                fCtx.restore();
-
-            } else if (index === 1) {
-                // --- Style 2: Gold Luxury (Square) ---
-                const padding = 40;
-                const borderW = 30;
-
-                // Gold Gradient
-                const goldGrad = fCtx.createLinearGradient(0, 0, CANVAS_SIZE, 0);
-                goldGrad.addColorStop(0, '#BF953F');
-                goldGrad.addColorStop(0.5, '#FCF6BA');
-                goldGrad.addColorStop(1, '#BF953F');
-
-                // Inner Frame
-                fCtx.strokeStyle = goldGrad;
-                fCtx.lineWidth = borderW;
-                fCtx.strokeRect(padding, padding, CANVAS_SIZE - padding*2, CANVAS_SIZE - padding*2);
-                
-                // Corner Accents
-                fCtx.fillStyle = goldGrad;
-                const cornerSize = 150;
-                
-                // Top Left
-                fCtx.fillRect(padding - 10, padding - 10, cornerSize, borderW + 20);
-                fCtx.fillRect(padding - 10, padding - 10, borderW + 20, cornerSize);
-                
-                // Bottom Right
-                fCtx.fillRect(CANVAS_SIZE - padding - cornerSize + 10, CANVAS_SIZE - padding - borderW - 10, cornerSize, borderW + 20);
-                fCtx.fillRect(CANVAS_SIZE - padding - borderW - 10, CANVAS_SIZE - padding - cornerSize + 10, borderW + 20, cornerSize);
-
-                // Text
-                fCtx.font = "italic bold 60px serif";
-                fCtx.fillStyle = '#BF953F';
-                fCtx.textAlign = "center";
-                fCtx.shadowColor = "rgba(0,0,0,0.8)";
-                fCtx.shadowBlur = 15;
-                fCtx.fillText("Exclusive", cx, CANVAS_SIZE - 100);
-
-            } else if (index === 2) {
-                // --- Style 3: Cyber Neon (Hexagon-ish / Tech) ---
-                
-                // Dark vignette overlay at edges
-                const vig = fCtx.createRadialGradient(cx, cy, CANVAS_SIZE/2 - 100, cx, cy, CANVAS_SIZE/2);
-                vig.addColorStop(0, 'rgba(0,0,0,0)');
-                vig.addColorStop(1, 'rgba(0,255,255,0.2)');
-                fCtx.fillStyle = vig;
-                fCtx.fillRect(0,0, CANVAS_SIZE, CANVAS_SIZE);
-
-                // Neon Lines
-                fCtx.shadowColor = "#00ffff";
-                fCtx.shadowBlur = 20;
-                fCtx.strokeStyle = "#00ffff";
-                fCtx.lineWidth = 15;
-                fCtx.lineCap = 'round';
-
-                // Tech Brackets
-                const gap = 100;
-                const ins = 50;
-
-                fCtx.beginPath();
-                // Top Left
-                fCtx.moveTo(cx - gap, ins);
-                fCtx.lineTo(ins, ins);
-                fCtx.lineTo(ins, cy - gap);
-                
-                // Bottom Right
-                fCtx.moveTo(cx + gap, CANVAS_SIZE - ins);
-                fCtx.lineTo(CANVAS_SIZE - ins, CANVAS_SIZE - ins);
-                fCtx.lineTo(CANVAS_SIZE - ins, cy + gap);
-
-                fCtx.stroke();
-
-                // Glitch Text
-                fCtx.shadowBlur = 0;
-                fCtx.font = "bold 80px monospace";
-                fCtx.fillStyle = "#00ffff";
-                fCtx.textAlign = "center";
-                fCtx.fillText("CYBER", cx, 120);
-                
-                // Subline
-                fCtx.fillStyle = "white";
-                fCtx.font = "40px monospace";
-                fCtx.fillText("PUNK_MODE", cx, CANVAS_SIZE - 80);
-            }
-
-            // Convert to Image Object
-            const img = new Image();
-            img.src = frameCanvas.toDataURL();
-            img.onload = () => {
-                state.frameImage = img;
-                draw();
-            };
-        }
-
-        // --- 2. Main Draw Loop ---
+        // --- Drawing Loop ---
         function draw() {
-            // Clear canvas
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // 1. Draw User Image (Bottom Layer)
-            if (state.userImage) {
+            ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+            
+            // 1. User Image (Background)
+            if (state.userImg) {
                 ctx.save();
-                
-                // Move to center of canvas
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                
-                // Apply transformations
-                ctx.translate(state.offsetX, state.offsetY);
+                ctx.translate(CANVAS_SIZE/2 + state.pan.x, CANVAS_SIZE/2 + state.pan.y);
                 ctx.scale(state.scale, state.scale);
-                
-                // Draw image centered relative to its own dimensions
-                ctx.drawImage(
-                    state.userImage, 
-                    -state.userImage.width / 2, 
-                    -state.userImage.height / 2
-                );
-                
+                ctx.drawImage(state.userImg, -state.userImg.width/2, -state.userImg.height/2);
                 ctx.restore();
             }
 
-            // 2. Draw Frame (Top Layer)
-            if (state.frameImage) {
-                ctx.drawImage(state.frameImage, 0, 0, canvas.width, canvas.height);
+            // 2. Frame Overlay (Foreground - SS.png)
+            if (state.frameImg) {
+                ctx.drawImage(state.frameImg, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
             }
         }
 
-        // --- 3. Event Handlers ---
-
-        // File Upload
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            // Show loading
-            loadingIndicator.classList.remove('hidden');
-
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    // Update State
-                    state.userImage = img;
-                    
-                    // Reset Transforms
-                    state.scale = calculateFitScale(img.width, img.height);
-                    state.offsetX = 0;
-                    state.offsetY = 0;
-                    
-                    // UI Updates
-                    zoomSlider.value = state.scale;
-                    zoomSlider.min = state.scale * 0.5; // Allow zooming out a bit more than fit
-                    zoomSlider.max = state.scale * 3;   // Allow zooming in 3x
-                    updateZoomDisplay();
-                    
-                    uploadPrompt.classList.add('opacity-0');
-                    controlsPanel.classList.remove('opacity-50', 'pointer-events-none');
-                    downloadBtn.disabled = false;
-                    loadingIndicator.classList.add('hidden');
-
-                    draw();
-                };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-
-        // Zoom Slider
-        zoomSlider.addEventListener('input', (e) => {
-            state.scale = parseFloat(e.target.value);
-            updateZoomDisplay();
-            draw();
-        });
-
-        function updateZoomDisplay() {
-            const percentage = Math.round((state.scale / calculateFitScale(state.userImage.width, state.userImage.height)) * 100);
-            zoomValue.textContent = `${percentage}%`;
-        }
-
-        // Helper: Calculate scale to cover the canvas
-        function calculateFitScale(imgW, imgH) {
-            const scaleW = CANVAS_SIZE / imgW;
-            const scaleH = CANVAS_SIZE / imgH;
-            return Math.max(scaleW, scaleH); // "Cover" style
-        }
-
-        // --- 4. Drag Logic (Mouse & Touch) ---
-        
-        // Helper to get coordinates relative to canvas
-        function getClientCoordinates(e) {
+        // --- Interaction Logic ---
+        const getPos = (e) => {
             const rect = canvas.getBoundingClientRect();
-            // Scale factor between CSS pixels and Canvas pixels
-            const scaleX = canvas.width / rect.width;
-            const scaleY = canvas.height / rect.height;
-
-            let clientX, clientY;
-            
-            if (e.touches && e.touches.length > 0) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
-            } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
-            }
-
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
+                x: (clientX - rect.left) * (CANVAS_SIZE/rect.width),
+                y: (clientY - rect.top) * (CANVAS_SIZE/rect.height)
             };
-        }
+        };
 
-        function handleStart(e) {
-            if (!state.userImage) return;
-            e.preventDefault(); // Prevent scrolling on mobile
-            state.isDragging = true;
-            const coords = getClientCoordinates(e);
-            state.startX = coords.x - state.offsetX;
-            state.startY = coords.y - state.offsetY;
-        }
-
-        function handleMove(e) {
-            if (!state.isDragging) return;
+        const startDrag = (e) => {
+            if(!state.userImg) return;
             e.preventDefault();
-            const coords = getClientCoordinates(e);
-            state.offsetX = coords.x - state.startX;
-            state.offsetY = coords.y - state.startY;
+            state.drag.active = true;
+            const pos = getPos(e);
+            state.drag.x = pos.x - state.pan.x;
+            state.drag.y = pos.y - state.pan.y;
+        };
+
+        const onDrag = (e) => {
+            if (!state.drag.active) return;
+            e.preventDefault();
+            const pos = getPos(e);
+            state.pan.x = pos.x - state.drag.x;
+            state.pan.y = pos.y - state.drag.y;
             draw();
+        };
+
+        const endDrag = () => state.drag.active = false;
+
+        canvas.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', onDrag);
+        window.addEventListener('mouseup', endDrag);
+        
+        canvas.addEventListener('touchstart', startDrag, {passive: false});
+        window.addEventListener('touchmove', onDrag, {passive: false});
+        window.addEventListener('touchend', endDrag);
+
+        // Zoom
+        document.getElementById('zoomSlider').addEventListener('input', (e) => {
+            state.scale = parseFloat(e.target.value);
+            updateZoomUI();
+            draw();
+        });
+
+        function updateZoomUI() {
+            if(!state.userImg) return;
+            const baseScale = Math.max(CANVAS_SIZE/state.userImg.width, CANVAS_SIZE/state.userImg.height);
+            const percentage = Math.round((state.scale / baseScale) * 100);
+            document.getElementById('zoomValue').innerText = percentage + "%";
         }
 
-        function handleEnd() {
-            state.isDragging = false;
-        }
-
-        // Mouse Events
-        canvas.addEventListener('mousedown', handleStart);
-        window.addEventListener('mousemove', handleMove); // Attach to window so drag continues outside canvas
-        window.addEventListener('mouseup', handleEnd);
-
-        // Touch Events
-        canvas.addEventListener('touchstart', handleStart, { passive: false });
-        window.addEventListener('touchmove', handleMove, { passive: false });
-        window.addEventListener('touchend', handleEnd);
-
-
-        // --- 5. Download Logic ---
-        downloadBtn.addEventListener('click', () => {
-            if (!state.userImage) return;
-
-            // Create temporary link
+        // Download
+        document.getElementById('downloadBtn').addEventListener('click', () => {
+            if(!state.userImg) return;
             const link = document.createElement('a');
-            link.download = `frame-studio-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png', 1.0); // High quality
+            link.download = `ramadan-dp-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
             link.click();
         });
-
-        // Start App with Frame 0 (Classic)
-        changeFrame(0);
 
     </script>
 </body>
